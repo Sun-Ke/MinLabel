@@ -1,11 +1,11 @@
 import tkinter as tk
 from tkinter import ttk
 from tkinter.filedialog import askdirectory
-from tkinter.messagebox import showerror
-import glob
+from tkinter.messagebox import showwarning
+from glob import glob
 import os
 from pathlib import Path
-import pygame
+from pygame import mixer
 import wave
 import contextlib
 import json
@@ -31,12 +31,11 @@ def check_no_diff(label_content: str, show_content: str) -> bool:
     return label_content == show_content.rstrip()
 
 
-class App(tk.Tk):
+class MinLabel(tk.Tk):
     def __init__(self):
         super().__init__()
         # pygame mixer
-        pygame.init()
-        pygame.mixer.init()
+        mixer.init()
         # global var
         self.status = {}  # filename -> bool
         self.track = tk.StringVar()
@@ -207,7 +206,7 @@ class App(tk.Tk):
             ) as f:
                 self.status = json.loads(f.read())
         # order by modified time
-        glob_lst = sorted(glob.glob(f"{dirname}/*.wav"), key=os.path.getmtime)
+        glob_lst = sorted(glob(f"{dirname}/*.wav"), key=os.path.getmtime)
         new_status = {}
         for idx, file_path in enumerate(glob_lst):
             path = Path(file_path)
@@ -222,29 +221,29 @@ class App(tk.Tk):
         self.status = new_status
 
     def play_music(self, event=None):
-        if pygame.mixer.music.get_busy():  # Playing
+        if mixer.music.get_busy():  # Playing
             self.status_for_button.set("play")
-            pygame.mixer.music.pause()
-        elif pygame.mixer.music.get_pos() >= 0:  # Pause
+            mixer.music.pause()
+        elif mixer.music.get_pos() >= 0:  # Pause
             self.status_for_button.set("pause")
-            pygame.mixer.music.unpause()
+            mixer.music.unpause()
             self.after(25, self.update_progress)
         elif os.path.isfile(self.track.get()):  # Stopped
             self.status_for_button.set("pause")
-            pygame.mixer.music.load(self.track.get())
+            mixer.music.load(self.track.get())
             with contextlib.closing(wave.open(self.track.get(), "r")) as f:
                 rate = f.getframerate()
                 frames = f.getnframes()
                 duration = frames / rate
             self.progress["maximum"] = duration * 1000  # ms
             self.progress["value"] = 0
-            pygame.mixer.music.play()
+            mixer.music.play()
             self.after(25, self.update_progress)
 
     def stop_music(self):
         self.progress["value"] = 0
-        pygame.mixer.music.stop()
-        pygame.mixer.music.unload()
+        mixer.music.stop()
+        mixer.music.unload()
 
     def focus_change(self, event=None):
         cur = self.table.focus()
@@ -257,7 +256,7 @@ class App(tk.Tk):
         status = values[-1]
         track = os.path.join(Path(self.open_dir), wav_name)
         if self.track.get() != track:
-            print("focus change", track)
+            # print("focus change", track)
             self.stop_music()
             self.track.set(track)
             self.is_ready.set(status == "True")
@@ -278,13 +277,13 @@ class App(tk.Tk):
             pass
 
     def update_progress(self):
-        self.progress["value"] = max(pygame.mixer.music.get_pos(), 0)
-        if pygame.mixer.music.get_busy():
+        self.progress["value"] = max(mixer.music.get_pos(), 0)
+        if mixer.music.get_busy():
             self.after(25, self.update_progress)
         else:
             self.status_for_button.set("play")
-            if pygame.mixer.music.get_pos() <= 0:  # stopped
-                pygame.mixer.music.unload()
+            if mixer.music.get_pos() <= 0:  # stopped
+                mixer.music.unload()
 
     def replace_content(self, event=None):
         if not self.table.focus() or not os.path.isfile(self.lab_path):
@@ -329,9 +328,7 @@ class App(tk.Tk):
         self.status[wav_name] = self.is_ready.get()
         cur = self.table.focus()
         values = list(self.table.item(cur)["values"])
-        print(values)
         values[-1] = str(self.is_ready.get())
-        print(values)
         self.table.item(self.table.focus(), values=tuple(values))
 
     def status_ready(self, event=None):
@@ -380,19 +377,19 @@ class App(tk.Tk):
         self.show_text.configure(state="disabled")
 
     def report_callback_exception(self, exc, val, tb):
-        showerror("Error", message=str(val))
+        showwarning("warning", message=str(val))
 
     # def debug(self):
     #     print(self.table.focus())
     #     print(
     #         "get pos",
-    #         pygame.mixer.music.get_pos(),
+    #         mixer.music.get_pos(),
     #         "get busy",
-    #         pygame.mixer.music.get_busy(),
+    #         mixer.music.get_busy(),
     #     )
     #     print(self.progress["value"], "/", self.progress["maximum"])
 
 
 if __name__ == "__main__":
-    app = App()
+    app = MinLabel()
     app.mainloop()
