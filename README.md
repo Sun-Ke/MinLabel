@@ -11,7 +11,7 @@ open folder -> select a wav file on the list -> edit the label content -> press 
 ## Features
 
 - play audio samples
-- delete wav file and lab file if the audio is useless ( **make sure you have a backup in case of accidental deletion** )
+- delete wav file and lab file if the audio is useless (**make sure you have a backup in case of accidental deletion**)
 - use `Status` to show whether a sample is ready or not
 - Press `i` to focus on the label text area
 - Press `Ctrl + S` to save your label
@@ -25,10 +25,10 @@ Install the module with pip:
 pip install -r requirements.txt
 ```
 
-run `app.py`:
+run `minlabel.py`:
 
 ```
-python app.py
+python minlabel.py
 ```
 
 ## TODO
