@@ -63,8 +63,8 @@ class MinLabel(tk.Tk):
         self.bind("<Control-S>", self.replace_content, add="+")
         self.bind("<Control-p>", self.play_music)
         self.bind("<Control-P>", self.play_music)
-        self.bind("<Control-Up>", self.switch_prev)
-        self.bind("<Control-Down>", self.switch_next)
+        self.bind("<Alt-z>", self.switch_next)
+        self.bind("<Alt-Z>", self.switch_next)
         self.bind("<Button-1>", self.focus_change)
         self.bind("<Key>", self.key_pressed)
 
@@ -308,8 +308,7 @@ class MinLabel(tk.Tk):
         self.table.delete(cur)
         if next:  # not last
             self.table.focus(next)
-            self.table.selection_clear()
-            self.table.selection_add(next)
+            self.table.selection_set(next)
         self.focus_change()
 
     def save_status(self):
@@ -344,14 +343,14 @@ class MinLabel(tk.Tk):
     def focus_on_table(self, event=None):
         self.table.focus_set()
 
-    def switch_prev(self, event=None):
-        self.focus_on_table()
-        self.table.tk_focusPrev()
-        self.focus_change()
-
     def switch_next(self, event=None):
         self.focus_on_table()
-        self.table.tk_focusNext()
+        cur = self.table.focus()
+        next = self.table.next(cur)
+        if not next:  # no focus or no next
+            return
+        self.table.focus(next)
+        self.table.selection_set(next)
         self.focus_change()
 
     def key_pressed(self, event=None):
