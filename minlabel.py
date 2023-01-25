@@ -297,8 +297,11 @@ class MinLabel(tk.Tk):
     def delete_file(self):
         if not self.table.focus():
             return
-        os.remove(self.lab_path)
-        os.remove(self.track.get())
+        self.stop_music()
+        if os.path.isfile(self.lab_path):
+            os.remove(self.lab_path)
+        if os.path.isfile(self.track.get()):
+            os.remove(self.track.get())
         # focus next item after delete
         cur = self.table.focus()
         next = self.table.next(cur)
